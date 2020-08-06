@@ -100,12 +100,12 @@ describe Encoder do
         },
         :body => {
           :key => "value with a space",
-          :another_key => 1013,
+          :another_key => 1013
         }
       })
       serialized = Encoder.new.serialize_request(req)
 
-      expect(serialized).to eq("key=value%20with%20a%20space&another_key=1013")
+      expect(serialized).to eq("key=value+with+a+space&another_key=1013")
     end
 
     it 'throws when content-type is unsupported' do
@@ -221,9 +221,12 @@ describe Encoder do
 
     it 'throws when attempting to deserialize application/x-www-form-urlencoded' do
       headers = {"content-type" => ["application/x-www-form-urlencoded"]}
-      body = 'some multipart encoded data here'
+      body = 'multipart+key=url+value&some+key=123'
 
-      expect{Encoder.new.deserialize_response(body, headers)}.to raise_error(UnsupportedEncodingError, 'FormEncoded does not support deserialization')
+      deserialized = Encoder.new.deserialize_response(body, headers)
+      expected = [ ['multipart key', 'url value'], ['some key', '123'] ]
+
+      expect(deserialized).to eq(expected)
     end
 
     it 'decodes data from gzip when content-encoding == gzip' do
